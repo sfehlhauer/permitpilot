@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PermitPilot — Navigate Building Permits Without the Headache</title>
+<style>
+  :root {
+    --navy: #0b1f3a;
+    --navy-light: #13284d;
+    --blue: #2563eb;
+    --blue-light: #3b82f6;
+    --amber: #f59e0b;
+    --amber-light: #fbbf24;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-500: #64748b;
+    --gray-700: #334155;
+    --white: #ffffff;
+    --radius: 16px;
+    --shadow-sm: 0 2px 8px rgba(11,31,58,0.06);
+    --shadow-md: 0 8px 24px rgba(11,31,58,0.10);
+    --shadow-lg: 0 20px 50px rgba(11,31,58,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--gray-700);
+    background: var(--white);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  a { text-decoration: none; color: inherit; }
+  ul { list-style: none; }
+  img { max-width: 100%; display: block; }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  h1, h2, h3, h4 {
+    color: var(--navy);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: rgba(37,99,235,0.08);
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 18px;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    margin-bottom: 14px;
+  }
+
+  .section-subtitle {
+    color: var(--gray-500);
+    font-size: 1.08rem;
+    max-width: 620px;
+    margin: 0 auto 50px;
+  }
+
+  .center { text-align: center; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--amber), #f97316);
+    color: var(--navy);
+    box-shadow: 0 10px 25px rgba(245,158,11,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(245,158,11,0.45); }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid rgba(255,255,255,0.4);
+  }
+  .btn-outline:hover { background: rgba(255,255,255,0.12); border-color: var(--white); }
+
+  .btn-dark {
+    background: var(--navy);
+    color: var(--white);
+  }
+  .btn-dark:hover { background: var(--navy-light); transform: translateY(-2px); }
+
+  /* NAVBAR */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--navy);
+  }
+  .logo-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--blue), var(--navy));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--gray-700);
+  }
+  .nav-links a:hover { color: var(--blue); }
+  .nav-cta { display: flex; gap: 12px; align-items: center; }
+  .nav-cta .btn { padding: 11px 22px; font-size: 0.9rem; }
+  .nav-cta .btn-dark { background: var(--navy); }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    background: radial-gradient(circle at 20% 20%, #163663 0%, var(--navy) 55%, #081428 100%);
+    color: white;
+    padding: 110px 24px 130px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, rgba(59,130,246,0.35), transparent 70%);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -160px;
+    left: -100px;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(245,158,11,0.22), transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 26px;
+  }
+  .hero h1 {
+    color: white;
+    font-size: clamp(2.4rem, 4.5vw, 3.4rem);
+    line-height: 1.12;
+    margin-bottom: 22px;
+  }
+  .hero h1 span {
+    background: linear-gradient(135deg, var(--amber-light), var(--amber));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p.lead {
+    font-size: 1.15rem;
+    color: rgba(255,255,255,0.82);
+    max-width: 540px;
+    margin-bottom: 34px;
+  }
+  .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 38px; }
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .hero-stats div { display: flex; flex-direction: column; }
+  .hero-stats strong { font-size: 1.6rem; color: var(--amber-light); font-weight: 800; }
+  .hero-stats span { font-size: 0.85rem; color: rgba(255,255,255,0.65); }
+
+  /* Score card visual */
+  .score-card {
+    position: relative;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(6px);
+  }
+  .score-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+  .score-card-top span.tag {
+    font-size: 0.75rem;
+    background: rgba(245,158,11,0.15);
+    color: var(--amber-light);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .score-ring {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: conic-gradient(var(--amber) 0deg 252deg, rgba(255,255,255,0.12) 252deg 360deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+  .score-ring-inner {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-ring-inner strong { font-size: 1.9rem; color: white; }
+  .score-ring-inner span { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+  .score-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+  .score-list li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.8);
+    border-bottom: 1px dashed rgba(255,255,255,0.12);
+    padding-bottom: 8px;
+  }
+  .score-list li b { color: white; }
+
+  /* LOGOS / TRUST */
+  .trust {
+    padding: 40px 24px;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .trust-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .trust p { font-weight: 700; color: var(--gray-500); font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; }
+  .trust-cities { display: flex; gap: 26px; flex-wrap: wrap; font-weight: 700; color: var(--navy); opacity: 0.65; font-size: 0.95rem; }
+
+  /* FEATURES */
+  .features { padding: 100px 24px; background: white; }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+  .feature-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 32px 26px;
+    transition: all 0.3s ease;
+  }
+  .feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--blue-light);
+    background: white;
+  }
+  .feature-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--blue), var(--navy));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: white;
+  }
+  .feature-card h3 { font-size: 1.15rem; margin-bottom: 10px; }
+  .feature-card p { color: var(--gray-500); font-size: 0.95rem; }
+
+  /* HOW IT WORKS / ABOUT */
+  .about {
+    padding: 100px 24px;
+    background: var(--navy);
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .about::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(37,99,235,0.25), transparent 70%);
+  }
+  .about-inner {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .about h2 { color: white; }
+  .about p.about-lead {
+    color: rgba(255,255,255,0.75);
+    font-size: 1.05rem;
+    margin-bottom: 24px;
+  }
+  .about-list { display: flex; flex-direction: column; gap: 18px; }
+  .about-list li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    color: rgba(255,255,255,0.85);
+    font-size: 0.98rem;
+  }
+  .about-list li .dot {
+    min-width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.18);
+    color: var(--amber-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.8rem;
+  }
+  .disclaimer-box {
+    margin-top: 30px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 18px 20px;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.65);
+  }
+  .steps { display: flex; flex-direction: column; gap: 22px; }
+  .step {
+    display: flex;
+    gap: 20px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .step-num {
+    min-width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--amber), #f97316);
+    color: var(--navy);
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+  .step h4 { color: white; margin-bottom: 6px; font-size: 1.05rem; }
+  .step p { color: rgba(255,255,255,0.65); font-size: 0.92rem; }
+
+  /* PRICING */
+  .pricing { padding: 100px 24px; background: var(--gray-50); }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+  .price-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 32px 26px;
+    border: 1px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+  }
+  .price-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
+  .price-card.featured {
+    background: linear-gradient(160deg, var(--navy), #0d2444);
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-lg);
+    transform: scale(1.03);
+  }
+  .price-card.featured .price-desc { color: rgba(255,255,255,0.7); }
+  .price-tag {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+  .price-card.featured .price-tag { color: var(--amber-light); }
+  .price-card h3 { font-size: 1.2rem; margin-bottom: 6px; }
+  .price-card.featured h3 { color: white; }
+  .price-amount { font-size: 2.2rem; font-weight: 800; color: var(--navy); margin: 12px 0; }
+  .price-card.featured .price-amount { color: white; }
+  .price-amount span { font-size: 0.95rem; font-weight: 600; color: var(--gray-500); }
+  .price-card.featured .price-amount span { color: rgba(255,255,255,0.6); }
+  .price-desc { color: var(--gray-500); font-size: 0.9rem; margin-bottom: 20px; min-height: 40px; }
+  .price-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; flex-grow: 1; }
+  .price-features li { font-size: 0.88rem; display: flex; gap: 8px; align-items: flex-start; }
+  .price-features li::before { content: '✓'; color: var(--blue); font-weight: 800; }
+  .price-card.featured .price-features li::before { color: var(--amber-light); }
+  .price-card .btn { width: 100%; }
+
+  .badge-popular {
+    position: absolute;
+    top: -14px;
+    right: 22px;
+    background: var(--amber);
+    color: var(--navy);
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 6px 12px;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+  }
+  .price-card { position: relative; }
+
+  /* VIRAL SCORE STRIP */
+  .viral-strip {
+    background: linear-gradient(135deg, var(--amber), #f97316);
+    padding: 60px 24px;
+  }
+  .viral-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+  .viral-inner h3 { color: var(--navy); font-size: 1.6rem; margin-bottom: 8px; }
+  .viral-inner p { color: rgba(11,31,58,0.75); font-size: 1rem; max-width: 560px; }
+  .viral-inner .btn-dark { flex-shrink: 0; }
+
+  /* TESTIMONIALS */
+  .testimonials { padding: 100px 24px; background: white; }
+  .test-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 26px;
+  }
+  .test-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 28px;
+  }
+  .stars { color: var(--amber); margin-bottom: 14px; font-size: 1rem; letter-spacing: 2px; }
+  .test-card p.quote { color: var(--gray-700); font-size: 0.95rem; margin-bottom: 18px; }
+  .test-person { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--navy));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 0.9rem;
+  }
+  .test-person strong { display: block; font-size: 0.9rem; color: var(--navy); }
+  .test-person span { font-size: 0.8rem; color: var(--gray-500); }
+
+  /* CONTACT / CTA */
+  .cta-final {
+    padding: 110px 24px;
+    background: radial-gradient(circle at 70% 30%, #163663 0%, var(--navy) 60%, #081428 100%);
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-final::before {
+    content: '';
+    position: absolute;
+    bottom: -140px; left: 40%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(245,158,11,0.25), transparent 70%);
+  }
+  .cta-final-inner { position: relative; z-index: 2; max-width: 720px; margin: 0 auto; }
+  .cta-final h2 { color: white; font-size: clamp(1.8rem, 3.5vw, 2.6rem); margin-bottom: 18px; }
+  .cta-final p { color: rgba(255,255,255,0.75); font-size: 1.05rem; margin-bottom: 36px; }
+  .cta-actions { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 40px; }
+  .contact-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px;
+    padding: 28px;
+    text-align: left;
+    margin-top: 10px;
+  }
+  .contact-form .full { grid-column: 1 / -1; }
+  .contact-form label { font-size: 0.82rem; color: rgba(255,255,255,0.75); margin-bottom: 6px; display: block; font-weight: 600; }
+  .contact-form input, .contact-form textarea, .contact-form select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
+    color: white;
+    font-size: 0.92rem;
+    font-family: inherit;
+  }
+  .contact-form input::placeholder, .contact-form textarea::placeholder { color: rgba(255,255,255,0.4); }
+  .contact-form .full .btn { width: 100%; margin-top: 6px; }
+
+  /* FOOTER */
+  footer {
+    background: #071224;
+    color: rgba(255,255,255,0.6);
+    padding: 50px 24px 26px;
+  }
+  .footer-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .footer-inner h4 { color: white; font-size: 0.95rem; margin-bottom: 16px; }
+  .footer-inner .logo { color: white; margin-bottom: 14px; }
+  .footer-inner p { font-size: 0.88rem; color: rgba(255,255,255,0.5); }
+  .footer-inner ul li { margin-bottom: 10px; font-size: 0.88rem; }
+  .footer-inner ul li a:hover { color: white; }
+  .footer-bottom {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-top: 22px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.4);
+  }
+
+  @media (max-width: 980px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .about-inner { grid-template-columns: 1fr; }
+    .feature-grid { grid-template-columns: repeat(2, 1fr); }
+    .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+    .test-grid { grid-template-columns: 1fr; }
+    .footer-inner { grid-template-columns: 1fr 1fr; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 620px) {
+    .feature-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .price-card.featured { transform: none; }
+    .contact-form { grid-template-columns: 1fr; }
+    .footer-inner { grid-template-columns: 1fr; }
+    .hero { padding: 90px 20px 100px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="#" class="logo">
+      <span class="logo-mark">PP</span>
+      PermitPilot
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#about">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#score" class="btn btn-dark">Get Free Score</a>
+    </div>
+  </nav>
+</header>
+
+<section class="hero" id="score">
+  <div class="hero-inner">
+    <div>
+      <span class="hero-badge">🚧 Free Permit Complexity Score — no signup required</span>
+      <h1>Stop guessing what your <span>building permit</span> actually requires.</h1>
+      <p class="lead">PermitPilot turns confusing local permit rules into a clear, jurisdiction-specific checklist — so contractors, remodelers, and homeowners know exactly what to submit, when, and to whom.</p>
+      <div class="hero-actions">
+        <a href="#pricing" class="btn btn-primary">Get My Free Permit Score →</a>
+        <a href="#about" class="btn btn-outline">See How It Works</a>
+      </div>
+      <div class="hero-stats">
+        <div><strong>1,200+</strong><span>Checklists generated</span></div>
+        <div><strong>340+</strong><span>Jurisdictions mapped</span></div>
+        <div><strong>4.8/5</strong><span>Avg. contractor rating</span></div>
+      </div>
+    </div>
+
+    <div class="score-card">
+      <div class="score-card-top">
+        <strong style="color:white;font-size:1rem;">Kitchen Remodel — Austin, TX</strong>
+        <span class="tag">SAMPLE SCORE</span>
+      </div>
+      <div class="score-ring">
+        <div class="score-ring-inner">
+          <strong>70</strong>
+          <span>COMPLEXITY</span>
+        </div>
+      </div>
+      <ul class="score-list">
+        <li>Permits required <b>3</b></li>
+        <li>Est. review time <b>10–14 days</b></li>
+        <li>Documents needed <b>7</b></li>
+        <li>Inspections <b>2</b></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="trust">
+  <div class="trust-inner">
+    <p>Built for permit-heavy cities across the U.S.</p>
+    <div class="trust-cities">
+      <span>Austin</span><span>Denver</span><span>Phoenix</span><span>Seattle</span><span>Atlanta</span><span>Charlotte</span>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="container center">
+    <span class="eyebrow">What You Get</span>
+    <h2 class="section-title">Everything you need before you break ground</h2>
+    <p class="section-subtitle">PermitPilot organizes the scattered, jurisdiction-specific permit process into one simple, trackable workflow.</p>
+  </div>
+  <div class="container">
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Step-by-Step Checklists</h3>
+        <p>Upload your project details and get a custom checklist mapped to your exact city and project type — no more guessing what's required.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Free Complexity Score</h3>
+        <p>Instantly see how complex your permit process will be, and share a clean, branded score with clients or contractors.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⏰</div>
+        <h3>Deadline Reminders</h3>
+        <p>Never miss an inspection window or resubmission deadline again — we track key dates and notify you automatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧑‍💼</div>
+        <h3>Optional Human Review</h3>
+        <p>Add a human-reviewed application package for extra confidence before you submit to your local permitting office.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗂️</div>
+        <h3>Multi-Project Tracking</h3>
+        <p>Contractors managing several jobs can track every project's permit status, documents, and deadlines in one dashboard.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h3>Shareable Client Reports</h3>
+        <p>Send homeowners and clients a clean, professional checklist PDF — a simple way to build trust and win more jobs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="viral-strip">
+  <div class="viral-inner">
+    <div>
+      <h3>Get your free Permit Complexity Score in under 2 minutes.</h3>
+      <p>Answer a few quick questions about your project and location — get a shareable score and downloadable checklist instantly, free.</p>
+    </div>
+    <a href="#pricing" class="btn btn-dark">Try It Free →</a>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="about-inner">
+    <div>
+      <span class="eyebrow" style="background: rgba(255,255,255,0.1); color: var(--amber-light);">How It Works</span>
+      <h2>Organized guidance, not legal guesswork</h2>
+      <p class="about-lead">PermitPilot is built to make the permit process understandable and trackable — we organize publicly available jurisdiction requirements into a clear checklist, so you always know your next step.</p>
+      <ul class="about-list">
+        <li><span class="dot">1</span> We map project type + location to local requirements</li>
+        <li><span class="dot">2</span> You get a clear document checklist and timeline</li>
+        <li><span class="dot">3</span> We track deadlines and send reminders automatically</li>
+        <li><span class="dot">4</span> Optional human reviewers double-check your package</li>
+      </ul>
+      <div class="disclaimer-box">
+        PermitPilot provides organizational guidance based on publicly available jurisdiction information. We are not a legal, architectural, or engineering authority — always confirm final requirements with your local permitting office.
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div>
+          <h4>Tell us about your project</h4>
+          <p>Location, project type, square footage, and scope — takes about 2 minutes.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div>
+          <h4>Get your complexity score & checklist</h4>
+          <p>See exactly which permits, documents, and inspections apply to your job.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div>
+          <h4>Track, share, and stay on schedule</h4>
+          <p>Get deadline alerts, share progress with clients, and add human review anytime.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="container center">
+    <span class="eyebrow">Simple Pricing</span>
+    <h2 class="section-title">Start free. Upgrade only when you need to.</h2>
+    <p class="section-subtitle">From a one-off checklist to full multi-project tracking — pricing that scales with your workload.</p>
+  </div>
+  <div class="container">
+    <div class="pricing-grid">
+      <div class="price-card">
+        <span class="price-tag">Free</span>
+        <h3>Permit Score</h3>
+        <div class="price-amount">$0</div>
+        <p class="price-desc">Get your shareable permit complexity score and a basic checklist.</p>
+        <ul class="price-features">
+          <li>Complexity score</li>
+          <li>Basic downloadable checklist</li>
+          <li>Shareable results link</li>
+        </ul>
+        <a href="#contact" class="btn btn-outline" style="color:var(--navy); border-color: var(--gray-200);">Get Started Free</a>
+      </div>
+
+      <div class="price-card">
+        <span class="price-tag">Per Project</span>
+        <h3>Project Checklist</h3>
+        <div class="price-amount">$19<span>–$49</span></div>
+        <p class="price-desc">Full jurisdiction-specific checklist for a single project.</p>
+        <ul class="price-features">
+          <li>Full document checklist</li>
+          <li>Deadline reminders</li>
+          <li>Jurisdiction-specific guidance</li>
+          <li>Editable PDF export</li>
+        </ul>
+        <a href="#contact" class="btn btn-dark">Choose Checklist</a>
+      </div>
+
+      <div class="price-card featured">
+        <span class="badge-popular">MOST POPULAR</span>
+        <span class="price-tag">Reviewed</span>
+        <h3>Human-Reviewed Package</h3>
+        <div class="price-amount">$79<span>–$149</span></div>
+        <p class="price-desc">Everything in Checklist, plus a human review pass before submission.</p>
+        <ul class="price-features">
+          <li>Everything in Project Checklist</li>
+          <li>Human reviewer sign-off</li>
+          <li>Submission-ready package</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#contact" class="btn btn-primary">Get Reviewed Package</a>
+      </div>
+
+      <div class="price-card">
+        <span class="price-tag">Contractors</span>
+        <h3>Multi-Project Tracking</h3>
+        <div class="price-amount">$29<span>–$99/mo</span></div>
+        <p class="price-desc">Track permits across all active jobs from one dashboard.</p>
+        <ul class="price-features">
+          <li>Unlimited project tracking</li>
+          <li>Team & client sharing</li>
+          <li>Deadline dashboard</li>
+          <li>Discounted checklists</li>
+        </ul>
+        <a href="#contact" class="btn btn-dark">Start Subscription</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials">
+  <div class="container center">
+    <span class="eyebrow">Trusted By Contractors & Homeowners</span>
+    <h2 class="section-title">Steady, reliable permit guidance — every project</h2>
+    <p class="section-subtitle">Real feedback from the people who use PermitPilot to keep their projects on schedule.</p>
+  </div>
+  <div class="container">
+    <div class="test-grid">
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <p class="quote">"I sent the free permit score to a client before we even signed the contract. It made us look organized and professional from day one."</p>
+        <div class="test-person">
+          <div class="avatar">DR</div>
+          <div><strong>Danielle R.</strong><span>Remodeling Contractor</span></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <p class="quote">"The checklist saved us two trips back to the permit office. Everything we needed was listed clearly upfront."</p>
+        <div class="test-person">
+          <div class="avatar">MF</div>
+          <div><strong>Marcus F.</strong><span>Property Investor</span></div>
+        </div>
+      </div>
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <p class="quote">"Managing five active permits at once used to be chaos. The tracking dashboard keeps every deadline in one place now."</p>
+        <div class="test-person">
+          <div class="avatar">JK</div>
+          <div><strong>Jordan K.</strong><span>General Contractor</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-final" id="contact">
+  <div class="cta-final-inner">
+    <span class="eyebrow" style="background: rgba(255,255,255,0.1); color: var(--amber-light);">Get Started Today</span>
+    <h2>Know your permit requirements before you break ground</h2>
+    <p>Get your free permit complexity score, or talk to us about a custom checklist for your next project.</p>
+    <div class="cta-actions">
+      <a href="#pricing" class="btn btn-primary">Get My Free Score →</a>
+      <a href="#" class="btn btn-outline">Book a Quick Call</a>
+    </div>
+
+    <form class="contact-form">
+      <div>
+        <label>Full Name</label>
+        <input type="text" placeholder="Jane Doe">
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="email" placeholder="jane@email.com">
+      </div>
+      <div class="full">
+        <label>Project Location (City, State)</label>
+        <input type="text" placeholder="Austin, TX">
+      </div>
+      <div class="full">
+        <label>Tell us about your project</label>
+        <textarea rows="3" placeholder="e.g. Kitchen remodel, 300 sq ft addition, garage conversion..."></textarea>
+      </div>
+      <div class="full">
+        <button type="submit" class="btn btn-primary">Send & Get My Checklist</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <a href="#" class="logo">
+        <span class="logo-mark">PP</span>
+        PermitPilot
+      </a>
+      <p>Turning confusing local permit rules into clear, trackable checklists for contractors, remodelers, and homeowners.</p>
+    </div>
+    <div>
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#about">How It Works</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Disclaimer</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 PermitPilot. All rights reserved.</span>
+    <span>PermitPilot is an organizational guidance tool and does not provide legal, architectural, or engineering services.</span>
+  </div>
+</footer>
+
+<script>(function(){var E='APP_BASE_URL/functions/siteChat',S='permitpilot';var b=document.createElement('div');b.style.cssText='position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:#00ff41;color:#0a0a12;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 0 20px rgba(0,255,65,0.5);z-index:99999';b.innerHTML='\u{1F4AC}';document.body.appendChild(b);var p=document.createElement('div');p.style.cssText='position:fixed;bottom:90px;right:20px;width:320px;max-height:400px;background:#0a0a12;border:2px solid #00ff41;border-radius:12px;display:none;flex-direction:column;z-index:99999;overflow:hidden;font-family:sans-serif';p.innerHTML='<div style="padding:12px;background:#00ff41;color:#0a0a12;font-weight:bold;font-size:14px">Chat with us</div><div id="cm" style="flex:1;overflow-y:auto;padding:12px;max-height:280px"></div><div style="padding:8px;display:flex;gap:4px"><input id="ci" style="flex:1;padding:8px;border:1px solid #00ff41;border-radius:4px;background:#111;color:#fff" placeholder="Type a message..."/><button id="cs" style="padding:8px 12px;background:#00ff41;color:#0a0a12;border:none;border-radius:4px;cursor:pointer;font-weight:bold">Send</button></div>';document.body.appendChild(p);var m=p.querySelector('#cm');function a(t,w){var d=document.createElement('div');d.style.cssText='padding:6px 10px;margin:4px 0;border-radius:8px;max-width:85%;font-size:13px;color:#fff;'+(w==='bot'?'background:#1a3a1a':'background:#003a3a;margin-left:auto');d.textContent=t;m.appendChild(d);m.scrollTop=m.scrollHeight;}b.onclick=function(){p.style.display=p.style.display==='none'?'flex':'none';if(!m.children.length)a('Hi! Ask me anything about our business.','bot');};function s(){var i=p.querySelector('#ci'),t=i.value.trim();if(!t)return;a(t,'user');i.value='';a('...','bot');fetch(E,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug:S,message:t})}).then(function(r){return r.json();}).then(function(d){var l=m.lastChild;if(l)l.remove();a(d.reply||'Sorry, I did not get that.','bot');}).catch(function(){var l=m.lastChild;if(l)l.remove();a('Connection error. Please try again later.','bot');});}p.querySelector('#cs').onclick=s;p.querySelector('#ci').onkeydown=function(e){if(e.key==='Enter')s();};})();</script><script>(function(){var L='APP_BASE_URL/Checkout?productId=6ab0912c1f9f700d4646b721';var b=document.createElement('a');b.href=L;b.target='_blank';b.rel='noopener noreferrer';b.style.cssText='position:fixed;bottom:20px;left:20px;padding:10px 18px;border-radius:8px;background:#00ff41;color:#0a0a12;font-family:sans-serif;font-weight:bold;font-size:14px;text-decoration:none;box-shadow:0 0 20px rgba(0,255,65,0.5);z-index:99999';b.innerHTML='\u{1F4B0} Buy Now';document.body.appendChild(b);})();</script></body>
+</html>
